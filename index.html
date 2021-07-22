@@ -7,7 +7,6 @@
     <meta name="description" content="Swipe Twitch - best clips on your phone">
     <meta name="robots" content="index, follow">
     <meta name="author" content="gaserd">
-    <link rel="stylesheet" href="https://cdn.rawgit.com/Chalarangelo/mini.css/v3.0.1/dist/mini-default.min.css">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
@@ -17,10 +16,194 @@
     <meta name="theme-color" content="#ffffff">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
 
+    <script src="https://hammerjs.github.io/dist/hammer.js"></script>
 </head>
 
 <body>
+    <div class="main">
+        <div class="swiper-container">
+            <div class="swiper-wrapper">
+
+            </div>
+        </div>
+    </div>
 
 </body>
+
+<style>
+    html,
+    body {
+        position: relative;
+        height: 100%;
+    }
+
+    body {
+        background: #eee;
+        font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
+        font-size: 14px;
+        color: #000;
+        margin: 0;
+        padding: 0;
+    }
+
+    .main {
+        overflow-y: hidden;
+    }
+
+
+    .main,
+    .swiper-container,
+    .swiper-wrapper,
+    .swiper-slide {
+        height: 100%;
+    }
+
+    .swiper-slide {
+        background-color: #000;
+        width: 100%;
+        height: 100%;
+    }
+
+    .swiper-slide video {
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        margin: auto;
+    }
+
+    .forbidden-error {
+        color: #fff;
+        padding: 1em;
+    }
+</style>
+
+<script>
+
+    let INDEX_VIEW_CLIP = 0
+    let clips = []
+
+    async function getClips() {
+        let ID = 'ghotej777m8rk7kmsp5yp4oo9t3fjg'
+        let TWITCH_URL = 'https://api.twitch.tv/kraken/clips/top?language=ru&period=week&limit=50'
+
+        return fetch(TWITCH_URL, {
+            headers: {
+                'Accept': 'application/vnd.twitchtv.v5+json',
+                'Client-ID': ID
+            }
+        })
+            .then(data => data.json())
+            .then(data => data.clips ? data.clips : [])
+    }
+
+    function clearVideo() {
+        document.getElementById(`swiper-slide${INDEX_VIEW_CLIP}`).innerHTML = ''
+    }
+
+    function renderVideo(tracking_id) {
+
+        let videoStatus = 0
+        //0 - на паузе
+        //1 - старт
+
+        document.getElementById(`swiper-slide${INDEX_VIEW_CLIP}`).innerHTML += `<video style="width: 100%;" src="https://clips-media-assets2.twitch.tv/AT-cm%7C${tracking_id}.mp4"/>`
+
+        setTimeout(function () {
+
+            if (document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP} video`).currentTime == 0) {
+                videoStatus = 0
+            } else {
+                videoStatus = 1
+            }
+
+            document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP} video`).addEventListener('click', function () {
+                if (videoStatus == 0) {
+                    document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP} video`).play()
+                    videoStatus = 1
+                } else {
+                    document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP} video`).pause()
+                    videoStatus = 0
+                }
+            })
+        },1000)
+    }
+
+    function renderListClips(clips) {
+        return `
+            ${clips.map((clip, id) => `
+                <div class="swiper-slide" id="swiper-slide${id}">
+                    
+                </div>`).join(' ')}
+            `
+    }
+
+    function forbiddenErrorVideo() {
+        let clip = clips[INDEX_VIEW_CLIP]
+        return `<p class="forbidden-error">К сожалению Twitch не разрешил нам показывать клип от пользователя ${clip.broadcaster.display_name}, 
+            но мы оставили для вас <a target="_blank" href="${clip.embed_url}">ссылку</a></p>`
+    }
+
+    function swipeUp() {
+        clearVideo()
+
+        INDEX_VIEW_CLIP++
+
+        let tracking_id = clips[INDEX_VIEW_CLIP].tracking_id
+        renderVideo(tracking_id)
+
+        document.getElementById(`swiper-slide${INDEX_VIEW_CLIP}`).scrollIntoView({ block: "center", behavior: "smooth" });
+        document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP} video`).play()
+
+        document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP} video`).onerror = function () {
+            document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP}`).innerHTML += forbiddenErrorVideo()
+        }
+    }
+
+    function swipeDown() {
+        clearVideo()
+
+        if (INDEX_VIEW_CLIP != 0)
+            INDEX_VIEW_CLIP--
+
+        let tracking_id = clips[INDEX_VIEW_CLIP].tracking_id
+        renderVideo(tracking_id)
+
+        document.getElementById(`swiper-slide${INDEX_VIEW_CLIP}`).scrollIntoView({ block: "center", behavior: "smooth" });
+        document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP} video`).play()
+
+        document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP} video`).onerror = function () {
+            document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP}`).innerHTML += forbiddenErrorVideo()
+        }
+    }
+
+    async function main() {
+        clips = await getClips()
+
+        let wrapper = document.querySelector('.swiper-wrapper')
+        wrapper.innerHTML = renderListClips(clips)
+
+        //находим первый клип и рендерим его при запуске
+        let tracking_id = clips[INDEX_VIEW_CLIP].tracking_id
+        renderVideo(tracking_id)
+
+        //инициализируем свайп машину
+        let mc = new Hammer(wrapper)
+        mc.get('swipe').set({
+            direction: Hammer.DIRECTION_ALL,
+            threshold: 1,
+            velocity: 0.1
+        })
+
+        mc.on("swipeup", swipeUp)
+
+        mc.on("swipedown", swipeDown)
+
+
+    }
+
+    main()
+</script>
 
 </html>
