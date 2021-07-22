@@ -15,6 +15,7 @@
     <meta name="msapplication-TileColor" content="#da532c">
     <meta name="theme-color" content="#ffffff">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="manifest" href="site.webmanifest">
 
     <script src="https://hammerjs.github.io/dist/hammer.js"></script>
 </head>
@@ -77,6 +78,41 @@
         color: #fff;
         padding: 1em;
     }
+
+    .video-bottom {
+        position: absolute;
+        bottom: 1em;
+        width: 100%;
+    }
+
+    .broadcaster {
+        margin-left: 1em;
+    }
+
+    .broadcaster img {
+        display: inline-block;
+        vertical-align: top;
+        width: 50px;
+        height: 50px;
+        border-radius: 50px;
+    }
+
+    .broadcaster p {
+        display: inline-block;
+        color: #fff;
+        padding: 0;
+        margin: 0;
+        vertical-align: top;
+        line-height: 50px;
+        margin-left: 0.724em;
+    }
+
+    .share {
+        position: absolute;
+        right: 1em;
+        top: 0;
+        line-height: 50px;
+    }
 </style>
 
 <script>
@@ -102,32 +138,61 @@
         document.getElementById(`swiper-slide${INDEX_VIEW_CLIP}`).innerHTML = ''
     }
 
-    function renderVideo(tracking_id) {
+    function renderVideo() {
 
         let videoStatus = 0
         //0 - на паузе
         //1 - старт
+        let clip = clips[INDEX_VIEW_CLIP]
 
-        document.getElementById(`swiper-slide${INDEX_VIEW_CLIP}`).innerHTML += `<video playsinline style="width: 100%;" src="https://clips-media-assets2.twitch.tv/AT-cm%7C${tracking_id}.mp4"/>`
+        document.getElementById(`swiper-slide${INDEX_VIEW_CLIP}`).innerHTML += `
+        <video playsinline style="width: 100%;" src="https://clips-media-assets2.twitch.tv/AT-cm%7C${clip.tracking_id}.mp4"></video>
+        <div class="video-bottom">
+            <div class="broadcaster">
+                <a href="${clip.broadcaster.channel_url}" target="_blank">
+                    <img src="${clip.broadcaster.logo}"><p>${clip.broadcaster.display_name}</p>
+                </a>
+            </div>
+            <div class="share">
+                <button id="share-button">SHARE</button>
+            </div>
+        </div>
+        `
 
-        setTimeout(function () {
 
-            if (document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP} video`).currentTime == 0) {
-                videoStatus = 0
-            } else {
+        let btnShare = document.querySelector('#share-button')
+        let video = document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP} video`)
+
+        if (video.currentTime == 0) {
+            videoStatus = 0
+        } else {
+            videoStatus = 1
+        }
+
+        video.addEventListener('click', function () {
+            if (videoStatus == 0) {
+                video.play()
                 videoStatus = 1
+            } else {
+                video.pause()
+                videoStatus = 0
+            }
+        })
+
+        btnShare.addEventListener('click', async function () {
+            
+            let shareData = {
+                title: 'Nice clip bruh',
+                text: 'I share this with https://gaserd.github.io/swipetwitch/',
+                url: clip.embed_url,
             }
 
-            document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP} video`).addEventListener('click', function () {
-                if (videoStatus == 0) {
-                    document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP} video`).play()
-                    videoStatus = 1
-                } else {
-                    document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP} video`).pause()
-                    videoStatus = 0
-                }
-            })
-        },1000)
+            try {
+                await navigator.share(shareData)
+            } catch (err) {
+                console.log(err)
+            }
+        })
     }
 
     function renderListClips(clips) {
@@ -149,9 +214,7 @@
         clearVideo()
 
         INDEX_VIEW_CLIP++
-
-        let tracking_id = clips[INDEX_VIEW_CLIP].tracking_id
-        renderVideo(tracking_id)
+        renderVideo()
 
         document.getElementById(`swiper-slide${INDEX_VIEW_CLIP}`).scrollIntoView({ block: "center", behavior: "smooth" });
         document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP} video`).play()
@@ -167,8 +230,7 @@
         if (INDEX_VIEW_CLIP != 0)
             INDEX_VIEW_CLIP--
 
-        let tracking_id = clips[INDEX_VIEW_CLIP].tracking_id
-        renderVideo(tracking_id)
+        renderVideo()
 
         document.getElementById(`swiper-slide${INDEX_VIEW_CLIP}`).scrollIntoView({ block: "center", behavior: "smooth" });
         document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP} video`).play()
