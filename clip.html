@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8">
+    <title>Swipe Twitch</title>
+    <meta name="description" content="Swipe Twitch - best clips on your phone">
+    <meta name="robots" content="index, follow">
+    <meta name="author" content="gaserd">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="mask-icon" href="safari-pinned-tab.svg" color="#5bbad5">
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+    <script src="./components/VideoWrapper/index.js"></script>
+    <link rel="stylesheet" href="./components/VideoWrapper/style.css">
+    </link>
+</head>
+<style>
+    html,
+    body {
+        position: relative;
+        height: 100%;
+        background-color: #000;
+    }
+
+    body {
+        font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
+        font-size: 14px;
+        color: #000;
+        margin: 0;
+        padding: 0;
+    }
+
+    .main {
+        overflow-y: hidden;
+    }
+
+
+    .main,
+    .swiper-container,
+    .swiper-wrapper,
+    .swiper-slide {
+        height: 100%;
+    }
+
+    .swiper-slide {
+        background-color: #000;
+        width: 100%;
+        height: 100%;
+    }
+
+    .button-container {
+        text-align: center;
+        margin-top: 1em;
+    }
+
+    .button-container a {
+        text-decoration: none;
+        padding: 0.5em;
+        color: #fff;
+        background-color: rgb(117, 26, 126);
+    }
+</style>
+
+
+
+<body>
+    <div class="main">
+        <div class="button-container">
+            <a href="./index.html">MORE CLIPS</a>
+        </div>
+        <div class="swiper-container">
+            <div class="swiper-wrapper">
+
+            </div>
+        </div>
+    </div>
+</body>
+
+<script>
+
+    let INDEX_VIEW_CLIP = 0
+
+    function renderListClips(clips) {
+        return `
+            ${clips.map((clip, id) => `
+                <div class="swiper-slide" id="swiper-slide${id}">
+                    
+                </div>`).join(' ')}
+            `
+    }
+
+    async function main() {
+
+        let search = location.search.substring(1);
+        let slug = JSON.parse('{"' + decodeURI(search).replace(/"/g, '\\"').replace(/&/g, '","').replace(/=/g, '":"') + '"}')
+
+        let clip = await getClip(slug.slug)
+
+        if (clip.error) {
+            console.log(clip.error)
+        } else {
+            let wrapper = document.querySelector('.swiper-wrapper')
+            wrapper.innerHTML = renderListClips([1])
+
+            renderVideo(clip)
+
+            document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP} video`).onerror = function () {
+                document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP}`).innerHTML += forbiddenErrorVideo()
+            }
+        }
+    }
+
+    main()
+</script>
