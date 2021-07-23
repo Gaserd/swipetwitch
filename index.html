@@ -22,6 +22,15 @@
 
 <body>
     <div class="main">
+        <div class="games-tabs">
+            <ul class="tabs">
+                <li data-id='0' class="active">ALL</li>
+                <li data-id='1'>CS:GO</li>
+                <li data-id='2'>LOL</li>
+                <li data-id='3'>DOTA 2</li>
+                <li data-id='4'>JUST CHATTING</li>
+            </ul>
+        </div>
         <div class="swiper-container">
             <div class="swiper-wrapper">
 
@@ -76,7 +85,8 @@
 
     .forbidden-error {
         color: #fff;
-        padding: 1em;
+        padding: 0.7em;
+        padding-top: 3em;
     }
 
     .video-bottom {
@@ -113,16 +123,84 @@
         top: 0;
         line-height: 50px;
     }
+
+    #share-button {
+        background-color: rgb(117, 26, 126);
+        border: none;
+        color: #fff;
+    }
+
+    .games-tabs {
+        background-color: #000;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+    }
+
+    .tabs {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        margin-left: 0.7em;
+        margin-top: 1em;
+    }
+
+    .tabs li {
+        display: inline-block;
+        vertical-align: top;
+        margin: 0;
+        padding: 0;
+        margin-right: 0.7em;
+        color: #fff;
+        list-style: none;
+    }
+
+    .tabs li.active {
+        border-bottom: 2px solid rgb(117, 26, 126);
+    }
 </style>
 
 <script>
 
+    /*
+    [-] сделать табы с категориями топ 10
+    [-] придумать как сделать бесконечную ленту
+    [-] исправить урл в кнопке шаринга
+    */
+
     let INDEX_VIEW_CLIP = 0
     let clips = []
+    let TABS = [
+        { name: 'ALL' },
+        { name: 'Counter-Strike: Global Offensive' },
+        { name: 'League of Legends' },
+        { name: 'Dota 2' },
+        { name: 'Just Chatting' }
+    ]
+    let INDEX_TABS = 0
+
+    // function getGames() {
+    //     //https://api.twitch.tv/kraken/search/games
+    //     let ID = 'ghotej777m8rk7kmsp5yp4oo9t3fjg'
+    //     let TWITCH_URL = 'https://api.twitch.tv/kraken/search/games?query=just'
+
+    //     return fetch(TWITCH_URL, {
+    //         headers: {
+    //             'Accept': 'application/vnd.twitchtv.v5+json',
+    //             'Client-ID': ID
+    //         }
+    //     })
+    //         .then(data => data.json())
+    //         .then(data => console.log(data))
+    // }
+
+    // console.log(getGames())
 
     async function getClips() {
         let ID = 'ghotej777m8rk7kmsp5yp4oo9t3fjg'
-        let TWITCH_URL = 'https://api.twitch.tv/kraken/clips/top?language=ru&period=week&limit=50'
+        let game = (INDEX_TABS != 0) ? `&game=${TABS[INDEX_TABS].name}` : ''
+        let TWITCH_URL = `https://api.twitch.tv/kraken/clips/top?period=day&limit=90${game}`
 
         return fetch(TWITCH_URL, {
             headers: {
@@ -180,11 +258,11 @@
         })
 
         btnShare.addEventListener('click', async function () {
-            
+
             let shareData = {
-                title: 'Nice clip bruh',
+                title: clip.title,
                 text: 'I share this with https://gaserd.github.io/swipetwitch/',
-                url: clip.embed_url,
+                url: clip.url,
             }
 
             try {
@@ -240,6 +318,13 @@
         }
     }
 
+    function clearActiveStateTabs() {
+        let tabs = document.querySelectorAll('.tabs li')
+        for (let i = 0; i < tabs.length; i++) {
+            tabs[i].classList.remove('active')
+        }
+    }
+
     async function main() {
         clips = await getClips()
 
@@ -249,6 +334,10 @@
         //находим первый клип и рендерим его при запуске
         let tracking_id = clips[INDEX_VIEW_CLIP].tracking_id
         renderVideo(tracking_id)
+
+        document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP} video`).onerror = function () {
+            document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP}`).innerHTML += forbiddenErrorVideo()
+        }
 
         //инициализируем свайп машину
         let mc = new Hammer(wrapper)
@@ -261,6 +350,34 @@
         mc.on("swipeup", swipeUp)
 
         mc.on("swipedown", swipeDown)
+
+
+
+        let tabs = document.querySelectorAll('.tabs li')
+        for (let i = 0; i < tabs.length; i++) {
+            let tab = tabs[i]
+            tab.addEventListener('click', async function () {
+                let id = Number(tab.getAttribute('data-id'))
+                clearActiveStateTabs()
+                tab.classList.add('active')
+                INDEX_TABS = id
+                INDEX_VIEW_CLIP = 0
+
+                clips = await getClips()
+
+                let wrapper = document.querySelector('.swiper-wrapper')
+                wrapper.innerHTML = renderListClips(clips)
+
+                //находим первый клип и рендерим его при запуске
+                let tracking_id = clips[INDEX_VIEW_CLIP].tracking_id
+                renderVideo(tracking_id)
+
+                document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP} video`).onerror = function () {
+                    document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP}`).innerHTML += forbiddenErrorVideo()
+                }
+
+            })
+        }
 
 
     }
