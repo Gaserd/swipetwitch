@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8">
+    <title>Swipe Twitch</title>
+    <meta name="description" content="Swipe Twitch - best clips on your phone">
+    <meta name="robots" content="index, follow">
+    <meta name="author" content="gaserd">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="manifest" href="site.webmanifest">
+    <link rel="mask-icon" href="safari-pinned-tab.svg" color="#5bbad5">
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+    <script src="https://hammerjs.github.io/dist/hammer.js"></script>
+    <script src="./components/VideoWrapper/index.js"></script>
+
+    <link rel="stylesheet" href="./components/VideoWrapper/style.css"></link>
+</head>
+
+<!-- Yandex.Metrika counter -->
+<script type="text/javascript" >
+    (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+    m[i].l=1*new Date();k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+    (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+ 
+    ym(83338954, "init", {
+         clickmap:true,
+         trackLinks:true,
+         accurateTrackBounce:true,
+         webvisor:true
+    });
+ </script>
+ <noscript><div><img src="https://mc.yandex.ru/watch/83338954" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+ <!-- /Yandex.Metrika counter -->
+
+<body>
+    <div class="main">
+        <div class="games-tabs">
+            <ul class="tabs">
+                <li data-id='0' class="active">ALL</li>
+                <li data-id='1'>CS:GO</li>
+                <li data-id='2'>LOL</li>
+                <li data-id='3'>DOTA 2</li>
+                <li data-id='4'>JUST CHATTING</li>
+            </ul>
+        </div>
+        <div class="swiper-container">
+            <div class="swiper-wrapper">
+
+            </div>
+        </div>
+    </div>
+
+</body>
+
+<style>
+    html,
+    body {
+        position: relative;
+        height: 100%;
+        background-color: #000;
+    }
+
+    body {
+        font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
+        font-size: 14px;
+        color: #000;
+        margin: 0;
+        padding: 0;
+    }
+
+    .main {
+        overflow-y: hidden;
+    }
+
+
+    .main,
+    .swiper-container,
+    .swiper-wrapper,
+    .swiper-slide {
+        height: 100%;
+    }
+
+    .swiper-slide {
+        background-color: #000;
+        width: 100%;
+        height: 100%;
+    }
+
+    
+
+    .games-tabs {
+        background-color: #000;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+    }
+
+    .tabs {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        margin-left: 0.7em;
+        margin-top: 1em;
+    }
+
+    .tabs li {
+        display: inline-block;
+        vertical-align: top;
+        margin: 0;
+        padding: 0;
+        margin-right: 0.7em;
+        color: #fff;
+        list-style: none;
+    }
+
+    .tabs li.active {
+        border-bottom: 2px solid rgb(117, 26, 126);
+    }
+</style>
+
+<script>
+
+    let INDEX_VIEW_CLIP = 0
+    let clips = []
+    let TABS = [
+        { name: 'ALL' },
+        { name: 'Counter-Strike: Global Offensive' },
+        { name: 'League of Legends' },
+        { name: 'Dota 2' },
+        { name: 'Just Chatting' }
+    ]
+    let INDEX_TABS = 0
+
+    async function getClips() {
+        let ID = 'ghotej777m8rk7kmsp5yp4oo9t3fjg'
+        let game = (INDEX_TABS != 0) ? `&game=${TABS[INDEX_TABS].name}` : ''
+        let TWITCH_URL = `https://api.twitch.tv/kraken/clips/top?period=day&limit=90${game}`
+
+        return fetch(TWITCH_URL, {
+            headers: {
+                'Accept': 'application/vnd.twitchtv.v5+json',
+                'Client-ID': ID
+            }
+        })
+            .then(data => data.json())
+            .then(data => data.clips ? data.clips : [])
+    }
+
+    
+
+    function renderListClips(clips) {
+        return `
+            ${clips.map((clip, id) => `
+                <div class="swiper-slide" id="swiper-slide${id}">
+                    
+                </div>`).join(' ')}
+            `
+    }
+
+    
+
+    function swipeUp() {
+        clearVideo()
+
+        INDEX_VIEW_CLIP++
+        renderVideo(clips[INDEX_VIEW_CLIP])
+
+        document.getElementById(`swiper-slide${INDEX_VIEW_CLIP}`).scrollIntoView({ block: "center", behavior: "smooth" });
+        document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP} video`).play()
+
+        document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP} video`).onerror = function () {
+            document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP}`).innerHTML += forbiddenErrorVideo()
+        }
+    }
+
+    function swipeDown() {
+        clearVideo()
+
+        if (INDEX_VIEW_CLIP != 0)
+            INDEX_VIEW_CLIP--
+
+        renderVideo(clips[INDEX_VIEW_CLIP])
+
+        document.getElementById(`swiper-slide${INDEX_VIEW_CLIP}`).scrollIntoView({ block: "center", behavior: "smooth" });
+        document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP} video`).play()
+
+        document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP} video`).onerror = function () {
+            document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP}`).innerHTML += forbiddenErrorVideo()
+        }
+    }
+
+    function clearActiveStateTabs() {
+        let tabs = document.querySelectorAll('.tabs li')
+        for (let i = 0; i < tabs.length; i++) {
+            tabs[i].classList.remove('active')
+        }
+    }
+
+    async function main() {
+        clips = await getClips()
+
+        let wrapper = document.querySelector('.swiper-wrapper')
+        wrapper.innerHTML = renderListClips(clips)
+
+        renderVideo(clips[INDEX_VIEW_CLIP])
+
+        document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP} video`).onerror = function () {
+            document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP}`).innerHTML += forbiddenErrorVideo()
+        }
+
+        //инициализируем свайп машину
+        let mc = new Hammer(wrapper)
+        mc.get('swipe').set({
+            direction: Hammer.DIRECTION_ALL,
+            threshold: 1,
+            velocity: 0.1
+        })
+
+        mc.on("swipeup", swipeUp)
+
+        mc.on("swipedown", swipeDown)
+
+
+
+        let tabs = document.querySelectorAll('.tabs li')
+        for (let i = 0; i < tabs.length; i++) {
+            let tab = tabs[i]
+            tab.addEventListener('click', async function () {
+                let id = Number(tab.getAttribute('data-id'))
+                clearActiveStateTabs()
+                tab.classList.add('active')
+                INDEX_TABS = id
+                INDEX_VIEW_CLIP = 0
+
+                clips = await getClips()
+
+                let wrapper = document.querySelector('.swiper-wrapper')
+                wrapper.innerHTML = renderListClips(clips)
+
+                renderVideo(clips[INDEX_VIEW_CLIP])
+
+                document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP} video`).onerror = function () {
+                    document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP}`).innerHTML += forbiddenErrorVideo()
+                }
+
+            })
+        }
+
+
+    }
+
+    main()
+</script>
+
+</html>
