@@ -32,7 +32,7 @@ function renderVideo(clip) {
     <video loop playsinline style="width: 100%;" src="https://clips-media-assets2.twitch.tv/AT-cm%7C${clip.tracking_id}.mp4"></video>
     <div class="video-bottom">
         <div class="broadcaster">
-            <a href="${clip.broadcaster.channel_url}" target="_blank">
+            <a href="./streamer.html?name=${clip.broadcaster.name}" target="_blank">
                 <img src="${clip.broadcaster.logo}"><p>${clip.broadcaster.display_name} <br><span class="title">${clip.title}</span></p>
             </a>
         </div>
