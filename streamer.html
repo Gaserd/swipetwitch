@@ -190,8 +190,16 @@
         })
 
         mc.on("swipeup", swipeUp)
-
         mc.on("swipedown", swipeDown)
+
+        let body = document.body
+        body.addEventListener('keyup', function(e) {
+            let code = e.code
+            console.log(code)
+            if (code == 'Space') { document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP} video`).play() }
+            if (code == 'ArrowUp') { swipeDown() }
+            if (code == 'ArrowDown') { swipeUp() }
+        })
 
     }
 

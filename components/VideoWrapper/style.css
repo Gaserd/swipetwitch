@@ -63,9 +63,11 @@
 }
 
 #share-button {
+    text-decoration: none;
     background-color: rgb(117, 26, 126);
     border: none;
     color: #fff;
+    padding: 0.2em;
 }
 
 .views {

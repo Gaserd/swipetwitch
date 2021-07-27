@@ -19,24 +19,29 @@
     <script src="https://hammerjs.github.io/dist/hammer.js"></script>
     <script src="./components/VideoWrapper/index.js"></script>
 
-    <link rel="stylesheet" href="./components/VideoWrapper/style.css"></link>
+    <link rel="stylesheet" href="./components/VideoWrapper/style.css">
+    </link>
 </head>
 
 <!-- Yandex.Metrika counter -->
-<script type="text/javascript" >
-    (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-    m[i].l=1*new Date();k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
-    (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
- 
+<script type="text/javascript">
+    (function (m, e, t, r, i, k, a) {
+        m[i] = m[i] || function () { (m[i].a = m[i].a || []).push(arguments) };
+        m[i].l = 1 * new Date(); k = e.createElement(t), a = e.getElementsByTagName(t)[0], k.async = 1, k.src = r, a.parentNode.insertBefore(k, a)
+    })
+        (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+
     ym(83338954, "init", {
-         clickmap:true,
-         trackLinks:true,
-         accurateTrackBounce:true,
-         webvisor:true
+        clickmap: true,
+        trackLinks: true,
+        accurateTrackBounce: true,
+        webvisor: true
     });
- </script>
- <noscript><div><img src="https://mc.yandex.ru/watch/83338954" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
- <!-- /Yandex.Metrika counter -->
+</script>
+<noscript>
+    <div><img src="https://mc.yandex.ru/watch/83338954" style="position:absolute; left:-9999px;" alt="" /></div>
+</noscript>
+<!-- /Yandex.Metrika counter -->
 
 <body>
     <div class="main">
@@ -92,7 +97,7 @@
         height: 100%;
     }
 
-    
+
 
     .games-tabs {
         background-color: #000;
@@ -138,6 +143,14 @@
     ]
     let INDEX_TABS = 0
 
+    function shuffle(a) {
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+    }
+
     async function getClips() {
         let ID = 'ghotej777m8rk7kmsp5yp4oo9t3fjg'
         let game = (INDEX_TABS != 0) ? `&game=${TABS[INDEX_TABS].name}` : ''
@@ -153,7 +166,7 @@
             .then(data => data.clips ? data.clips : [])
     }
 
-    
+
 
     function renderListClips(clips) {
         return `
@@ -164,7 +177,7 @@
             `
     }
 
-    
+
 
     function swipeUp() {
         clearVideo()
@@ -205,6 +218,7 @@
 
     async function main() {
         clips = await getClips()
+        clips = shuffle(clips)
 
         let wrapper = document.querySelector('.swiper-wrapper')
         wrapper.innerHTML = renderListClips(clips)
@@ -226,6 +240,14 @@
         mc.on("swipeup", swipeUp)
 
         mc.on("swipedown", swipeDown)
+
+        let body = document.body
+        body.addEventListener('keyup', function (e) {
+            let code = e.code
+            if (code == 'Space') { document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP} video`).play() }
+            if (code == 'ArrowUp') { swipeDown() }
+            if (code == 'ArrowDown') { swipeUp() }
+        })
 
 
 
