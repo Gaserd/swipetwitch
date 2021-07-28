@@ -33,18 +33,18 @@ function renderVideo(clip) {
     let videoStatus = 0
     //0 - на паузе
     //1 - старт
+    let loaded = false
 
     document.getElementById(`swiper-slide${INDEX_VIEW_CLIP}`).innerHTML += `
-    <video loop playsinline style="width: 100%;" src="https://clips-media-assets2.twitch.tv/AT-cm%7C${clip.tracking_id}.mp4"></video>
+    <p class="loader-video" style="display:none;">Pls wait, we load this epic clip 🔥</p>
+    <video loop playsinline style="width: 100%;"></video>
     <div class="video-bottom">
         <div class="broadcaster">
             <a href="./streamer.html?name=${clip.broadcaster.name}" target="_blank">
                 <img src="${clip.broadcaster.logo}"><p>${clip.broadcaster.display_name} <br><span class="title">${clip.title}</span></p>
             </a>
         </div>
-        <div class="share">${
-            mobileCheck() ? `<button id="share-button">SHARE</button>` : `<a href="${clip.url}" target="_blank" id="share-button">SHARE</a>`
-        }
+        <div class="share">${mobileCheck() ? `<button id="share-button">SHARE</button>` : `<a href="${clip.url}" target="_blank" id="share-button">SHARE</a>`}
         </div>
         <div class="views">
             <p>👀 ${clip.views}</p>
@@ -53,8 +53,33 @@ function renderVideo(clip) {
     `
 
 
+
     let btnShare = document.querySelector('#share-button')
     let video = document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP} video`)
+    video.src = `https://clips-media-assets2.twitch.tv/AT-cm%7C${clip.tracking_id}.mp4`
+    video.load()
+
+    let interaction = 0
+    let interval = setInterval(function() {
+        if (interaction > 10) {
+            document.querySelector('.loader-video').style.display = 'none'
+            clearInterval(interval)
+        }
+
+        if (loaded) {
+            document.querySelector('.loader-video').style.display = 'none'
+            clearInterval(interval)
+        } else {
+            if (interaction > 0) {
+                document.querySelector('.loader-video').style.display = 'block'
+            }
+        }
+        interaction++
+    }, 500)
+
+    video.addEventListener('loadeddata', function () {
+        loaded = true
+    }, false);
 
     if (video.currentTime == 0) {
         videoStatus = 0

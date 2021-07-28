@@ -52,6 +52,10 @@
                 <li data-id='2'>LOL</li>
                 <li data-id='3'>DOTA 2</li>
                 <li data-id='4'>JUST CHATTING</li>
+                <li data-id='5'>FORTNITE</li>
+                <li data-id='6'>STARCRAFT 2</li>
+                <li data-id='7'>HEARTHSTONE</li>
+                <li data-id='8'>WARZONE</li>
             </ul>
         </div>
         <div class="swiper-container">
@@ -139,7 +143,11 @@
         { name: 'Counter-Strike: Global Offensive' },
         { name: 'League of Legends' },
         { name: 'Dota 2' },
-        { name: 'Just Chatting' }
+        { name: 'Just Chatting' },
+        { name: 'Fortnite'},
+        { name: 'StarCraft II'},
+        { name: 'Hearthstone'},
+        { name: 'Call of Duty: Warzone'}
     ]
     let INDEX_TABS = 0
 
@@ -224,6 +232,7 @@
         wrapper.innerHTML = renderListClips(clips)
 
         renderVideo(clips[INDEX_VIEW_CLIP])
+        document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP} video`).play()
 
         document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP} video`).onerror = function () {
             document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP}`).innerHTML += forbiddenErrorVideo()
@@ -262,11 +271,13 @@
                 INDEX_VIEW_CLIP = 0
 
                 clips = await getClips()
+                clips = shuffle(clips)
 
                 let wrapper = document.querySelector('.swiper-wrapper')
                 wrapper.innerHTML = renderListClips(clips)
 
                 renderVideo(clips[INDEX_VIEW_CLIP])
+                document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP} video`).play()
 
                 document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP} video`).onerror = function () {
                     document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP}`).innerHTML += forbiddenErrorVideo()
