@@ -56,6 +56,9 @@
                 <li data-id='6'>STARCRAFT 2</li>
                 <li data-id='7'>HEARTHSTONE</li>
                 <li data-id='8'>WARZONE</li>
+                <li data-id='9'>APEX</li>
+                <li data-id='10'>MINECRAFT</li>
+                <li data-id='11'>VALORANT</li>
             </ul>
         </div>
         <div class="swiper-container">
@@ -139,15 +142,18 @@
     let INDEX_VIEW_CLIP = 0
     let clips = []
     let TABS = [
-        { name: 'ALL' },
-        { name: 'Counter-Strike: Global Offensive' },
-        { name: 'League of Legends' },
-        { name: 'Dota 2' },
-        { name: 'Just Chatting' },
-        { name: 'Fortnite'},
-        { name: 'StarCraft II'},
-        { name: 'Hearthstone'},
-        { name: 'Call of Duty: Warzone'}
+        { name: 'All' }, //en
+        { name: 'Counter-Strike: Global Offensive' }, //en, ru
+        { name: 'League of Legends' }, //en
+        { name: 'Dota 2' }, //en
+        { name: 'Just Chatting' }, //en, ru
+        { name: 'Fortnite' }, //en
+        { name: 'StarCraft II' }, //en
+        { name: 'Hearthstone' }, //en
+        { name: 'Call of Duty: Warzone' }, //en, ru
+        { name: 'Apex Legends' }, //en
+        { name: 'Minecraft' }, //en, ru
+        { name: 'VALORANT' }, //en
     ]
     let INDEX_TABS = 0
 
@@ -162,7 +168,8 @@
     async function getClips() {
         let ID = 'ghotej777m8rk7kmsp5yp4oo9t3fjg'
         let game = (INDEX_TABS != 0) ? `&game=${TABS[INDEX_TABS].name}` : ''
-        let TWITCH_URL = `https://api.twitch.tv/kraken/clips/top?period=day&limit=90${game}`
+        let language = (navigator.language.indexOf('en') != -1) ? 'en' : 'ru'
+        let TWITCH_URL = `https://api.twitch.tv/kraken/clips/top?period=day&limit=90${game}&language=${language}&trending=true`
 
         return fetch(TWITCH_URL, {
             headers: {
@@ -229,14 +236,20 @@
         clips = shuffle(clips)
 
         let wrapper = document.querySelector('.swiper-wrapper')
-        wrapper.innerHTML = renderListClips(clips)
 
-        renderVideo(clips[INDEX_VIEW_CLIP])
-        document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP} video`).play()
+        if (clips.length > 0) {
+            wrapper.innerHTML = renderListClips(clips)
 
-        document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP} video`).onerror = function () {
-            document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP}`).innerHTML += forbiddenErrorVideo()
+            renderVideo(clips[INDEX_VIEW_CLIP])
+            document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP} video`).play()
+
+            document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP} video`).onerror = function () {
+                document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP}`).innerHTML += forbiddenErrorVideo()
+            }
+        } else {
+            wrapper.innerHTML += `<p class="forbidden-error">Error, pls change language or category</p>`
         }
+
 
         //инициализируем свайп машину
         let mc = new Hammer(wrapper)
@@ -265,11 +278,13 @@
             let tab = tabs[i]
             tab.addEventListener('click', async function () {
                 let id = Number(tab.getAttribute('data-id'))
+                
                 clearActiveStateTabs()
                 tab.classList.add('active')
                 INDEX_TABS = id
                 INDEX_VIEW_CLIP = 0
 
+                clearVideo()
                 clips = await getClips()
                 clips = shuffle(clips)
 

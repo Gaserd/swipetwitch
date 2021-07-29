@@ -11,7 +11,7 @@ function mobileCheck() {
 }
 
 function clearVideo() {
-    document.getElementById(`swiper-slide${INDEX_VIEW_CLIP}`).innerHTML = ''
+    document.getElementById(`swiper-slide${INDEX_VIEW_CLIP}`) ? document.getElementById(`swiper-slide${INDEX_VIEW_CLIP}`).innerHTML = '' : ''
 }
 
 async function getClip(slug) {
