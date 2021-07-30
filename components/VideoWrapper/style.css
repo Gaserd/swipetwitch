@@ -85,3 +85,10 @@
     font-size: 1.5em;
 }
 
+.my_twitter {
+    position: absolute;
+    top: 5em;
+    color: #fff;
+    padding: 0.5em;
+}
+

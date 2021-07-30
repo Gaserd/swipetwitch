@@ -140,6 +140,7 @@
 <script>
 
     let INDEX_VIEW_CLIP = 0
+    let VIEW_ADS_MY_TWITTER = 0
     let clips = []
     let TABS = [
         { name: 'All' }, //en
@@ -168,8 +169,8 @@
     async function getClips() {
         let ID = 'ghotej777m8rk7kmsp5yp4oo9t3fjg'
         let game = (INDEX_TABS != 0) ? `&game=${TABS[INDEX_TABS].name}` : ''
-        let language = (navigator.language.indexOf('en') != -1) ? 'en' : 'ru'
-        let TWITCH_URL = `https://api.twitch.tv/kraken/clips/top?period=day&limit=90${game}&language=${language}&trending=true`
+
+        let TWITCH_URL = `https://api.twitch.tv/kraken/clips/top?period=day&limit=90${game}&trending=true`
 
         return fetch(TWITCH_URL, {
             headers: {
@@ -192,19 +193,34 @@
             `
     }
 
+    function renderAdsMyTwitter() {
+        let html = `
+            <div class="my_twitter">
+                <p>Hey! Thx for watching clips and I think you like this service, but I need your help.</p>
+                <p>I want you to tell your friends about my project, it would help me to develop it further and refine more and more new functions in it.</p>
+                <p>If you want to follow the news of the project, then just subscribe to me on <a href="https://twitter.com/gaserdgg" target="_blank">Twitter</a></p>
+                <img style="width: 150px;" src="./img/i.jpeg"></img>
+            </div>
+        `
 
+        document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP}`).innerHTML += html
+    }
 
     function swipeUp() {
         clearVideo()
 
         INDEX_VIEW_CLIP++
-        renderVideo(clips[INDEX_VIEW_CLIP])
+        if (INDEX_VIEW_CLIP == 5 && VIEW_ADS_MY_TWITTER == 0) {
+            VIEW_ADS_MY_TWITTER == 1
+            renderAdsMyTwitter()
+        } else {
+            renderVideo(clips[INDEX_VIEW_CLIP])
+            document.getElementById(`swiper-slide${INDEX_VIEW_CLIP}`).scrollIntoView({ block: "center", behavior: "smooth" });
+            document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP} video`).play()
 
-        document.getElementById(`swiper-slide${INDEX_VIEW_CLIP}`).scrollIntoView({ block: "center", behavior: "smooth" });
-        document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP} video`).play()
-
-        document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP} video`).onerror = function () {
-            document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP}`).innerHTML += forbiddenErrorVideo()
+            document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP} video`).onerror = function () {
+                document.querySelector(`#swiper-slide${INDEX_VIEW_CLIP}`).innerHTML += forbiddenErrorVideo()
+            }
         }
     }
 
@@ -278,7 +294,7 @@
             let tab = tabs[i]
             tab.addEventListener('click', async function () {
                 let id = Number(tab.getAttribute('data-id'))
-                
+
                 clearActiveStateTabs()
                 tab.classList.add('active')
                 INDEX_TABS = id
